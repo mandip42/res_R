@@ -10,7 +10,7 @@ type PlanKey = "pro" | "pro_year" | "lifetime";
 type CheckoutButtonProps = {
   plan: PlanKey;
   children: React.ReactNode;
-  variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
+  variant?: "default" | "outline" | "ghost" | "subtle";
   className?: string;
 };
 
