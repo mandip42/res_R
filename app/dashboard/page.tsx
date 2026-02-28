@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { AuthNav } from "@/components/auth-nav";
 import { Logo } from "@/components/logo";
+
+const ROAST_STEPS = [
+  "Uploading your resume…",
+  "Reading your experience…",
+  "AI is roasting your resume…",
+  "Preparing your feedback…",
+  "Almost there…",
+];
 
 type PastRoast = {
   id: string;
@@ -27,8 +35,43 @@ export default function DashboardPage() {
   const [pastRoasts, setPastRoasts] = useState<PastRoast[]>([]);
   const [roastsLoading, setRoastsLoading] = useState(true);
   const [plan, setPlan] = useState<"free" | "pro" | "lifetime">("free");
+  const [roastStepIndex, setRoastStepIndex] = useState(0);
+  const [roastProgress, setRoastProgress] = useState(0);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isPaid = plan === "pro" || plan === "lifetime";
+
+  useEffect(() => {
+    if (!uploading) {
+      setRoastProgress(0);
+      setRoastStepIndex(0);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (stepIntervalRef.current) {
+        clearInterval(stepIntervalRef.current);
+        stepIntervalRef.current = null;
+      }
+      return;
+    }
+    setRoastProgress(0);
+    setRoastStepIndex(0);
+    stepIntervalRef.current = setInterval(() => {
+      setRoastStepIndex((i) => (i + 1) % ROAST_STEPS.length);
+    }, 2800);
+    progressIntervalRef.current = setInterval(() => {
+      setRoastProgress((p) => {
+        if (p >= 90) return 90;
+        return p + Math.random() * 6 + 4;
+      });
+    }, 400);
+    return () => {
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
+    };
+  }, [uploading]);
 
   useEffect(() => {
     async function loadRoasts() {
@@ -85,6 +128,7 @@ export default function DashboardPage() {
       }
 
       if (data?.id) {
+        setRoastProgress(100);
         setPastRoasts((prev) => [
           {
             id: data.id,
@@ -95,7 +139,7 @@ export default function DashboardPage() {
           },
           ...prev,
         ]);
-        router.push(`/roast/${data.id}`);
+        setTimeout(() => router.push(`/roast/${data.id}`), 400);
       }
     } catch (err: any) {
       setError(
@@ -167,12 +211,28 @@ export default function DashboardPage() {
                   {uploading ? (
                     <span className="flex items-center justify-center gap-2">
                       <Spinner className="h-4 w-4" />
-                      <span>Cringing at your resume... please wait</span>
+                      <span>Roasting in progress…</span>
                     </span>
                   ) : (
                     "Roast this resume"
                   )}
                 </Button>
+                {uploading && (
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-4 space-y-3">
+                    <p className="text-sm font-medium text-foreground transition-opacity">
+                      {ROAST_STEPS[roastStepIndex]}
+                    </p>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-300 ease-out"
+                        style={{ width: `${Math.min(roastProgress, 100)}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {Math.min(Math.round(roastProgress), 100)}%
+                    </p>
+                  </div>
+                )}
               </form>
               {error && (
                 <p className="mt-3 text-xs text-red-400">
