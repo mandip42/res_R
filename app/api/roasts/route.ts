@@ -14,6 +14,14 @@ export async function GET() {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
+  const { data: profile } = await supabase
+    .from("users")
+    .select("plan")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const plan = (profile?.plan as "free" | "pro" | "lifetime") ?? "free";
+
   const { data: roasts, error } = await supabase
     .from("roasts")
     .select("id, created_at, score, status, result_json")
@@ -37,5 +45,5 @@ export async function GET() {
     };
   });
 
-  return NextResponse.json({ roasts: list });
+  return NextResponse.json({ roasts: list, plan });
 }

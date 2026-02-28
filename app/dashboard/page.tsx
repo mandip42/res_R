@@ -26,6 +26,9 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [pastRoasts, setPastRoasts] = useState<PastRoast[]>([]);
   const [roastsLoading, setRoastsLoading] = useState(true);
+  const [plan, setPlan] = useState<"free" | "pro" | "lifetime">("free");
+
+  const isPaid = plan === "pro" || plan === "lifetime";
 
   useEffect(() => {
     async function loadRoasts() {
@@ -34,6 +37,7 @@ export default function DashboardPage() {
         if (res.ok) {
           const data = await res.json();
           setPastRoasts(data.roasts ?? []);
+          if (data.plan) setPlan(data.plan);
         }
       } catch {
         setPastRoasts([]);
@@ -119,9 +123,11 @@ export default function DashboardPage() {
               Upload your resume, get roasted, and track your glow-up over time.
             </p>
           </div>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/pricing">Upgrade plan</Link>
-          </Button>
+          {isPaid ? null : (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/pricing">Upgrade plan</Link>
+            </Button>
+          )}
         </header>
 
         <section className="grid gap-6 md:grid-cols-[1.2fr,1fr]">
@@ -183,15 +189,23 @@ export default function DashboardPage() {
             <CardContent className="space-y-2 text-xs text-muted-foreground md:text-sm">
               <p>
                 <span className="font-medium text-foreground">Current plan:</span>{" "}
-                Free
+                {plan === "lifetime" ? "Lifetime" : plan === "pro" ? "Pro" : "Free"}
               </p>
-              <p>
-                Free users get <span className="font-semibold">1</span> full roast.
-                Upgrade to unlock unlimited roasts and PDF downloads.
-              </p>
-              <Button asChild size="sm" className="mt-2 w-full">
-                <Link href="/pricing">See upgrade options</Link>
-              </Button>
+              {isPaid ? (
+                <p>
+                  You have unlimited roasts and PDF downloads. You’re all set.
+                </p>
+              ) : (
+                <>
+                  <p>
+                    Free users get <span className="font-semibold">1</span> full roast.
+                    Upgrade to unlock unlimited roasts and PDF downloads.
+                  </p>
+                  <Button asChild size="sm" className="mt-2 w-full">
+                    <Link href="/pricing">See upgrade options</Link>
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         </section>
