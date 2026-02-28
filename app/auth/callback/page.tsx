@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-
 export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,12 +18,16 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      const supabase = createSupabaseBrowserClient();
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      const res = await fetch("/api/auth/exchange-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
 
-      if (error) {
+      if (!res.ok) {
+        const data = await res.json();
         setStatus("error");
-        router.replace(`/login?error=${encodeURIComponent(error.message)}`);
+        router.replace(`/login?error=${encodeURIComponent(data?.error ?? "Invalid link")}`);
         return;
       }
 

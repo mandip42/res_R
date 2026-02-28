@@ -25,10 +25,14 @@ export default function ResetPasswordPage() {
       const code = searchParams.get("code");
 
       if (code) {
-        const supabase = createSupabaseBrowserClient();
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
-          setError(exchangeError.message);
+        const exchangeRes = await fetch("/api/auth/exchange-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+        });
+        const exchangeData = await exchangeRes.json();
+        if (!exchangeRes.ok) {
+          setError(exchangeData?.error ?? "Invalid or expired link. Request a new reset.");
           setLoading(false);
           return;
         }
