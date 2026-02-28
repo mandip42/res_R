@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/auth-helpers-nextjs";
+import { createServerClient } from "@supabase/ssr";
 
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
@@ -8,18 +8,19 @@ export async function createSupabaseServerClient() {
 
   return createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
-      // Simple get/set/remove adapter compatible with Next.js async cookies
-      async get(name: string) {
-        return cookieStore.get(name)?.value ?? null;
+      getAll() {
+        return cookieStore.getAll();
       },
-      async set(name: string, value: string, options: any) {
-        cookieStore.set({ name, value, ...options });
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          );
+        } catch {
+          // Ignore when called from Server Component (read-only)
+        }
       },
-      async remove(name: string, options: any) {
-        // options are ignored by Next.js cookies().delete, but we accept them for compatibility
-        cookieStore.delete(name);
-      }
-    }
-  } as any);
+    },
+  });
 }
 
