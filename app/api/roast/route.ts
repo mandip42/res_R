@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { extractTextFromFile } from "@/lib/resume-parser";
-import { ROAST_SYSTEM_PROMPT, RoastResult, openai } from "@/lib/openai-client";
+import { ROAST_SYSTEM_PROMPT, RoastResult, getOpenAI } from "@/lib/openai-client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: ROAST_SYSTEM_PROMPT },

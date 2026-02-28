@@ -1,12 +1,16 @@
 import OpenAI from "openai";
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("OPENAI_API_KEY is not set");
-}
+let _client: OpenAI | null = null;
 
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+/** Lazy client so OPENAI_API_KEY is only checked at request time, not at build time (Vercel). */
+export function getOpenAI(): OpenAI {
+  if (!_client) {
+    const key = process.env.OPENAI_API_KEY;
+    if (!key) throw new Error("OPENAI_API_KEY is not set");
+    _client = new OpenAI({ apiKey: key });
+  }
+  return _client;
+}
 
 export type RoastResult = {
   overall_score: number;
