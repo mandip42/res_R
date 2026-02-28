@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthNav } from "@/components/auth-nav";
 import { Logo } from "@/components/logo";
+import { CheckoutButton } from "@/components/checkout-button";
 
 export default function PricingPage() {
   return (
@@ -60,17 +61,18 @@ export default function PricingPage() {
                 <p className="text-2xl font-semibold text-foreground">$9</p>
                 <p className="text-xs text-muted-foreground">per month</p>
               </div>
-              <div className="rounded-full border border-border/70 bg-background/60 px-3 py-1 text-[11px]">
-                Switch to yearly:{" "}
-                <span className="font-semibold">$79 / year</span> (save 27%)
-              </div>
               <ul className="space-y-1 text-xs md:text-sm">
                 <li>• Unlimited resume roasts</li>
                 <li>• Full detailed breakdown</li>
                 <li>• PDF download</li>
                 <li>• Priority processing</li>
               </ul>
-              <Button className="mt-3 w-full">Upgrade to Pro</Button>
+              <CheckoutButton plan="pro" className="mt-3 w-full">
+                Upgrade to Pro ($9/mo)
+              </CheckoutButton>
+              <CheckoutButton plan="pro_year" variant="outline" className="mt-2 w-full">
+                Or $79/year (save 27%)
+              </CheckoutButton>
             </CardContent>
           </Card>
 
@@ -87,9 +89,9 @@ export default function PricingPage() {
                 <li>• Early adopter badge on profile</li>
                 <li>• All future features included</li>
               </ul>
-              <Button className="mt-3 w-full" variant="outline">
+              <CheckoutButton plan="lifetime" variant="outline" className="mt-3 w-full">
                 Get Lifetime
-              </Button>
+              </CheckoutButton>
             </CardContent>
           </Card>
         </section>
