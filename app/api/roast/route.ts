@@ -8,7 +8,11 @@ export const dynamic = "force-dynamic";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
-const DEV_ADMIN_EMAILS = ["mandipgoswami25@gmail.com", "mandipgoswami@gmail.com"];
+const DEV_ADMIN_EMAILS = [
+  "mandipgoswami25@gmail.com",
+  "mandipgoswami@gmail.com",
+  "ritusmitabaruah18@gmail.com",
+];
 
 /** Emails that get unlimited roasts (e.g. admin/testing). Set in .env.local at project root. Use ADMIN_EMAIL=one@email.com or ADMIN_EMAILS=one@e.com,two@e.com. Restart dev server after changing. In development, DEV_ADMIN_EMAILS always have access. */
 function hasUnlimitedAccess(email: string | undefined): boolean {

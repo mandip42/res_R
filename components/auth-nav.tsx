@@ -86,24 +86,24 @@ export function AuthNav() {
       <div className="flex items-center gap-3">
         <Link
           href="/"
-          className="text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
+          className="whitespace-nowrap text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
         >
           Home
         </Link>
         <Link
           href="/pricing"
-          className="text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
+          className="whitespace-nowrap text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
         >
           Pricing
         </Link>
         <Link
           href="/login"
-          className="text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
+          className="whitespace-nowrap text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
         >
           Log in
         </Link>
         <Button asChild size="sm">
-          <Link href="/signup" className="flex items-center gap-1">
+          <Link href="/signup" className="flex items-center gap-1 whitespace-nowrap">
             Get started
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
@@ -116,19 +116,19 @@ export function AuthNav() {
     <div className="flex items-center gap-3">
       <Link
         href="/"
-        className="text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
+        className="whitespace-nowrap text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
       >
         Home
       </Link>
       <Link
         href="/pricing"
-        className="text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
+        className="whitespace-nowrap text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
       >
         Pricing
       </Link>
       <Link
         href="/dashboard"
-        className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
+        className="flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
       >
         <User className="h-3.5 w-3.5" />
         {displayName}
@@ -136,7 +136,7 @@ export function AuthNav() {
       <button
         type="button"
         onClick={handleSignOut}
-        className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
+        className="flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
       >
         <LogOut className="h-3.5 w-3.5" />
         Log out
