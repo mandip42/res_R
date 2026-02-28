@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,39 @@ import { Spinner } from "@/components/ui/spinner";
 import { AuthNav } from "@/components/auth-nav";
 import { Logo } from "@/components/logo";
 
+type PastRoast = {
+  id: string;
+  created_at: string;
+  score: number | null;
+  status: string;
+  one_liner: string | null;
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const [fileName, setFileName] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pastRoasts, setPastRoasts] = useState<PastRoast[]>([]);
+  const [roastsLoading, setRoastsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadRoasts() {
+      try {
+        const res = await fetch("/api/roasts");
+        if (res.ok) {
+          const data = await res.json();
+          setPastRoasts(data.roasts ?? []);
+        }
+      } catch {
+        setPastRoasts([]);
+      } finally {
+        setRoastsLoading(false);
+      }
+    }
+    loadRoasts();
+  }, []);
 
   async function handleUpload(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -54,6 +81,16 @@ export default function DashboardPage() {
       }
 
       if (data?.id) {
+        setPastRoasts((prev) => [
+          {
+            id: data.id,
+            created_at: new Date().toISOString(),
+            score: null,
+            status: "completed",
+            one_liner: null,
+          },
+          ...prev,
+        ]);
         router.push(`/roast/${data.id}`);
       }
     } catch (err: any) {
@@ -165,11 +202,45 @@ export default function DashboardPage() {
               <CardTitle className="text-sm md:text-base">Past roasts</CardTitle>
             </CardHeader>
             <CardContent className="text-xs text-muted-foreground md:text-sm">
-              <p>
-                Your roast history will show up here once Supabase auth and storage are
-                wired up. For now, this is just a friendly placeholder instead of a
-                404.
-              </p>
+              {roastsLoading ? (
+                <div className="flex items-center justify-center gap-2 py-6">
+                  <Spinner className="h-4 w-4" />
+                  <span>Loading your roasts...</span>
+                </div>
+              ) : pastRoasts.length === 0 ? (
+                <p>
+                  No roasts yet. Upload a resume above to get your first roast.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {pastRoasts.map((roast) => (
+                    <li key={roast.id}>
+                      <Link
+                        href={`/roast/${roast.id}`}
+                        className="block rounded-lg border border-border/70 bg-background/60 px-3 py-2 transition-colors hover:border-primary/50 hover:bg-muted/50"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-medium text-foreground">
+                            {roast.score != null ? `Score: ${roast.score}/100` : "Roast"}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {new Date(roast.created_at).toLocaleDateString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+                        {roast.one_liner && (
+                          <p className="mt-1 line-clamp-2 text-muted-foreground">
+                            {roast.one_liner}
+                          </p>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </section>

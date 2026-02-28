@@ -17,14 +17,19 @@ export default async function RoastPage({ params }: RoastPageProps) {
   }
 
   const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { data: roast, error } = await supabase
     .from("roasts")
-    .select("result_json, score, created_at")
+    .select("result_json, score, created_at, user_id")
     .eq("id", id)
     .single();
 
   if (error || !roast || !roast.result_json) {
+    notFound();
+  }
+
+  if (user && roast.user_id !== user.id) {
     notFound();
   }
 
