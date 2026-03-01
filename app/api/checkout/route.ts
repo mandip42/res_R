@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const isSubscription = planKey === "pro"; // Pro monthly = subscription; pro_year & lifetime = one-time
     const sessionPlan = planKey === "lifetime" ? "lifetime" : "pro";
 
-    const sessionParams: Parameters<typeof stripe.checkout.sessions.create>[0] = {
+    const session = await stripe.checkout.sessions.create({
       mode: isSubscription ? "subscription" : "payment",
       payment_method_types: ["card"],
       line_items: [
@@ -62,14 +62,10 @@ export async function POST(req: NextRequest) {
         user_id: user.id,
         plan: sessionPlan,
       },
-    };
-    if (profile?.stripe_customer_id) {
-      sessionParams.customer = profile.stripe_customer_id;
-    } else {
-      sessionParams.customer_email = user.email;
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
+      ...(profile?.stripe_customer_id
+        ? { customer: profile.stripe_customer_id }
+        : { customer_email: user.email }),
+    });
 
     if (!session.url) {
       return NextResponse.json(
