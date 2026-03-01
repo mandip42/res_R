@@ -16,15 +16,18 @@ export async function GET() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("username, full_name")
+    .select("username, full_name, plan")
     .eq("id", user.id)
     .maybeSingle();
+
+  const plan = (profile?.plan as "free" | "pro" | "lifetime") ?? "free";
 
   return NextResponse.json({
     user: {
       email: user.email,
       username: profile?.username ?? user.user_metadata?.username ?? null,
       full_name: profile?.full_name ?? user.user_metadata?.full_name ?? null,
+      plan,
     },
   });
 }

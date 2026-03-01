@@ -33,6 +33,16 @@ export default async function RoastPage({ params }: RoastPageProps) {
     notFound();
   }
 
+  let plan: "free" | "pro" | "lifetime" = "free";
+  if (user) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("plan")
+      .eq("id", user.id)
+      .maybeSingle();
+    plan = (profile?.plan as "free" | "pro" | "lifetime") ?? "free";
+  }
+
   const result = roast.result_json as RoastResult;
 
   return (
@@ -126,7 +136,7 @@ export default async function RoastPage({ params }: RoastPageProps) {
         )}
 
         {/* Actions */}
-        <RoastActions roastId={id} />
+        <RoastActions roastId={id} plan={plan} />
       </div>
     </main>
   );

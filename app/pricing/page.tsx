@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +8,18 @@ import { AuthNav } from "@/components/auth-nav";
 import { Logo } from "@/components/logo";
 import { CheckoutButton } from "@/components/checkout-button";
 
+type Plan = "free" | "pro" | "lifetime" | null;
+
 export default function PricingPage() {
+  const [plan, setPlan] = useState<Plan>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => setPlan(data?.user?.plan ?? null))
+      .catch(() => setPlan(null));
+  }, []);
+
   return (
     <main className="min-h-screen bg-background px-4 py-12">
       <div className="mx-auto flex max-w-5xl flex-col gap-10">
@@ -42,9 +56,11 @@ export default function PricingPage() {
                 <li>• Basic feedback only</li>
                 <li>• No downloads</li>
               </ul>
-              <Button disabled className="mt-3 w-full" variant="outline">
-                Current plan
-              </Button>
+              {plan === "free" ? (
+                <Button disabled className="mt-3 w-full" variant="outline">
+                  Current plan
+                </Button>
+              ) : null}
             </CardContent>
           </Card>
 
@@ -67,12 +83,20 @@ export default function PricingPage() {
                 <li>• PDF download</li>
                 <li>• Priority processing</li>
               </ul>
-              <CheckoutButton plan="pro" className="mt-3 w-full">
-                Upgrade to Pro ($9/mo)
-              </CheckoutButton>
-              <CheckoutButton plan="pro_year" variant="outline" className="mt-2 w-full">
-                Or $79/year (save 27%)
-              </CheckoutButton>
+              {plan === "pro" ? (
+                <Button disabled className="mt-3 w-full" variant="outline">
+                  Current plan
+                </Button>
+              ) : (
+                <>
+                  <CheckoutButton plan="pro" className="mt-3 w-full">
+                    Upgrade to Pro ($9/mo)
+                  </CheckoutButton>
+                  <CheckoutButton plan="pro_year" variant="outline" className="mt-2 w-full">
+                    Or $79/year (save 27%)
+                  </CheckoutButton>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -89,9 +113,15 @@ export default function PricingPage() {
                 <li>• Early adopter badge on profile</li>
                 <li>• All future features included</li>
               </ul>
-              <CheckoutButton plan="lifetime" variant="outline" className="mt-3 w-full">
-                Get Lifetime
-              </CheckoutButton>
+              {plan === "lifetime" ? (
+                <Button disabled className="mt-3 w-full" variant="outline">
+                  Current plan
+                </Button>
+              ) : (
+                <CheckoutButton plan="lifetime" variant="outline" className="mt-3 w-full">
+                  Get Lifetime
+                </CheckoutButton>
+              )}
             </CardContent>
           </Card>
         </section>

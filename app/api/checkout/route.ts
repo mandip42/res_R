@@ -22,6 +22,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
+    const { data: profile } = await supabase
+      .from("users")
+      .select("stripe_customer_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
     const body = await req.json();
     const planKey = (body.plan as string) || "pro"; // 'pro' | 'pro_year' | 'lifetime'
 
@@ -40,7 +46,7 @@ export async function POST(req: NextRequest) {
     const isSubscription = planKey === "pro"; // Pro monthly = subscription; pro_year & lifetime = one-time
     const sessionPlan = planKey === "lifetime" ? "lifetime" : "pro";
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: Parameters<typeof stripe.checkout.sessions.create>[0] = {
       mode: isSubscription ? "subscription" : "payment",
       payment_method_types: ["card"],
       line_items: [
@@ -51,13 +57,19 @@ export async function POST(req: NextRequest) {
       ],
       success_url: `${appUrl}/dashboard?upgraded=1`,
       cancel_url: `${appUrl}/pricing`,
-      customer_email: user.email,
       client_reference_id: user.id,
       metadata: {
         user_id: user.id,
         plan: sessionPlan,
       },
-    });
+    };
+    if (profile?.stripe_customer_id) {
+      sessionParams.customer = profile.stripe_customer_id;
+    } else {
+      sessionParams.customer_email = user.email;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     if (!session.url) {
       return NextResponse.json(

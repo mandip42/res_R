@@ -4,6 +4,7 @@ import "./globals.css";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://roastmyresume.app";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: "Roast My Resume",
   description:
     "Get a brutally honest, AI-powered roast of your resume with actionable fixes in under 60 seconds.",
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${appUrl}/og.png`,
+        url: "/og.png",
         width: 1200,
         height: 630,
         alt: "Roast My Resume"
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     title: "Roast My Resume",
     description:
       "Get a brutally honest AI-powered roast of your resume with actionable fixes.",
-    images: [`${appUrl}/og.png`]
+    images: ["/og.png"]
   }
 };
 

@@ -26,6 +26,28 @@ type PastRoast = {
   one_liner: string | null;
 };
 
+function ManageBillingButton() {
+  const [loading, setLoading] = useState(false);
+  async function openPortal() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/portal", { method: "POST" });
+      const data = await res.json();
+      if (data?.url) window.location.href = data.url;
+      else alert(data?.error ?? "Could not open billing.");
+    } catch {
+      alert("Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <Button type="button" variant="outline" size="sm" className="mt-2 w-full" onClick={openPortal} disabled={loading}>
+      {loading ? "Opening…" : "Manage subscription"}
+    </Button>
+  );
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [fileName, setFileName] = useState<string | null>(null);
@@ -252,15 +274,23 @@ export default function DashboardPage() {
                 {plan === "lifetime" ? "Lifetime" : plan === "pro" ? "Pro" : "Free"}
               </p>
               {isPaid ? (
+                <>
                 <p>
                   You have unlimited roasts and PDF downloads. You’re all set.
                 </p>
+                  <ManageBillingButton />
+                </>
               ) : (
                 <>
                   <p>
                     Free users get <span className="font-semibold">1</span> full roast.
                     Upgrade to unlock unlimited roasts and PDF downloads.
                   </p>
+                  {!roastsLoading && (
+                    <p className="text-muted-foreground">
+                      <span className="font-medium text-foreground">{Math.min(pastRoasts.length, 1)} of 1</span> free roast used
+                    </p>
+                  )}
                   <Button asChild size="sm" className="mt-2 w-full">
                     <Link href="/pricing">See upgrade options</Link>
                   </Button>

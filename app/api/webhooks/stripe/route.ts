@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.client_reference_id ?? session.metadata?.user_id;
       const plan = (session.metadata?.plan as "pro" | "lifetime") ?? "pro";
+      const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
 
       if (!userId) {
         console.error("Stripe webhook: no user_id in session", session.id);
@@ -48,9 +49,12 @@ export async function POST(req: NextRequest) {
 
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+      const updates: { plan: string; stripe_customer_id?: string } = { plan };
+      if (customerId) updates.stripe_customer_id = customerId;
+
       const { error: updateError } = await supabase
         .from("users")
-        .update({ plan })
+        .update(updates)
         .eq("id", userId);
 
       if (updateError) {

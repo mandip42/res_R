@@ -6,10 +6,27 @@ import { Button } from "@/components/ui/button";
 
 type RoastActionsProps = {
   roastId: string;
+  plan?: "free" | "pro" | "lifetime";
 };
 
-export function RoastActions({ roastId }: RoastActionsProps) {
+export function RoastActions({ roastId, plan = "free" }: RoastActionsProps) {
   const [copied, setCopied] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const isPaid = plan === "pro" || plan === "lifetime";
+
+  async function handleManageSubscription() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/portal", { method: "POST" });
+      const data = await res.json();
+      if (data?.url) window.location.href = data.url;
+      else alert(data?.error ?? "Could not open billing.");
+    } catch {
+      alert("Something went wrong.");
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   function handleCopyLink() {
     const url =
@@ -45,9 +62,12 @@ export function RoastActions({ roastId }: RoastActionsProps) {
   }
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <Button variant="outline" size="sm" asChild>
         <Link href="/dashboard">Back to dashboard</Link>
+      </Button>
+      <Button size="sm" asChild>
+        <Link href="/dashboard">Roast again</Link>
       </Button>
       <Button
         variant="outline"
@@ -60,6 +80,16 @@ export function RoastActions({ roastId }: RoastActionsProps) {
       <Button size="sm" onClick={handleDownloadPdf}>
         Download as PDF
       </Button>
+      {isPaid && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleManageSubscription}
+          disabled={portalLoading}
+        >
+          {portalLoading ? "Opening…" : "Manage subscription"}
+        </Button>
+      )}
     </div>
   );
 }
