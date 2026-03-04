@@ -128,9 +128,9 @@ export function SectionCardClient({
                     <p className="whitespace-pre-line">{alt}</p>
                     <Button
                       type="button"
-                      size="xs"
+                      size="sm"
                       variant="outline"
-                      className="shrink-0 text-[10px]"
+                      className="shrink-0 text-[10px] px-2 py-0 h-7"
                       onClick={() => handleCopy(alt)}
                     >
                       Copy
