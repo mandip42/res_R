@@ -81,9 +81,9 @@ export function SectionCardClient({
         <CardTitle className="text-sm md:text-base">{title}</CardTitle>
         <Button
           type="button"
-          size="xs"
+          size="sm"
           variant={isPaid ? "outline" : "ghost"}
-          className={`text-[11px] ${!isPaid ? "text-primary" : ""}`}
+          className={`text-[11px] px-2 py-0 h-7 ${!isPaid ? "text-primary" : ""}`}
           onClick={handleRewrite}
           disabled={loading}
         >
