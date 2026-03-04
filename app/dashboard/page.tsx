@@ -396,9 +396,9 @@ export default function DashboardPage() {
                       <Button
                         key={p}
                         type="button"
-                        size="xs"
+                        size="sm"
                         variant={plan === p ? "outline" : "ghost"}
-                        className="text-[11px]"
+                        className="text-[11px] px-2 py-0 h-7"
                         onClick={async () => {
                           try {
                             const res = await fetch("/api/dev/plan", {
