@@ -118,9 +118,9 @@ export function RoastActions({ roastId, plan = "free", isJobCompare = false }: R
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
-              size="xs"
+              size="sm"
               variant={isPaid ? "outline" : "ghost"}
-              className={!isPaid ? "text-primary" : ""}
+              className={`text-[11px] px-2 py-0 h-7 ${!isPaid ? "text-primary" : ""}`}
               disabled={coverLoading}
               onClick={async () => {
                 if (!isPaid) {
@@ -176,9 +176,9 @@ export function RoastActions({ roastId, plan = "free", isJobCompare = false }: R
                     <p className="text-[11px] font-medium text-foreground">Cover letter</p>
                     <Button
                       type="button"
-                      size="xs"
+                      size="sm"
                       variant="outline"
-                      className="text-[10px]"
+                      className="text-[10px] px-2 py-0 h-7"
                       onClick={() => navigator.clipboard.writeText(coverLetter)}
                     >
                       Copy
@@ -195,9 +195,9 @@ export function RoastActions({ roastId, plan = "free", isJobCompare = false }: R
                     <p className="text-[11px] font-medium text-foreground">Outreach email</p>
                     <Button
                       type="button"
-                      size="xs"
+                      size="sm"
                       variant="outline"
-                      className="text-[10px]"
+                      className="text-[10px] px-2 py-0 h-7"
                       onClick={() =>
                         navigator.clipboard.writeText(
                           `Subject: ${coldEmail.subject}\n\n${coldEmail.body}`
@@ -227,9 +227,9 @@ export function RoastActions({ roastId, plan = "free", isJobCompare = false }: R
           </p>
           <Button
             type="button"
-            size="xs"
+            size="sm"
             variant={isPaid ? "outline" : "ghost"}
-            className={!isPaid ? "text-primary" : ""}
+            className={`text-[11px] px-2 py-0 h-7 ${!isPaid ? "text-primary" : ""}`}
             onClick={() => {
               if (!isPaid) {
                 router.push("/pricing");
