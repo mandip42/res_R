@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { extractTextFromFile } from "@/lib/resume-parser";
-import { ROAST_SYSTEM_PROMPT, RoastResult, getOpenAI } from "@/lib/openai-client";
+import { JOB_ROAST_SYSTEM_PROMPT, RoastResult, getOpenAI } from "@/lib/openai-client";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,22 +14,26 @@ const DEV_ADMIN_EMAILS = [
   "ritusmitabaruah18@gmail.com",
 ];
 
-/** Emails that get unlimited roasts (e.g. admin/testing). Set in .env.local at project root. Use ADMIN_EMAIL=one@email.com or ADMIN_EMAILS=one@e.com,two@e.com. Restart dev server after changing. In development, DEV_ADMIN_EMAILS always have access. */
 function hasUnlimitedAccess(email: string | undefined): boolean {
   if (!email) return false;
   const normalized = email.toLowerCase().trim();
   if (process.env.NODE_ENV === "development" && DEV_ADMIN_EMAILS.includes(normalized)) return true;
   const single = process.env.ADMIN_EMAIL?.toLowerCase().trim();
   if (single && single === normalized) return true;
-  const list = process.env.ADMIN_EMAILS?.toLowerCase().split(",").map((e) => e.trim()).filter(Boolean) ?? [];
+  const list =
+    process.env.ADMIN_EMAILS?.toLowerCase()
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean) ?? [];
   return list.includes(normalized);
 }
 
+/** POST: roast a resume specifically against a given job description. */
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createSupabaseServerClient();
     const {
-      data: { user }
+      data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
@@ -38,6 +42,8 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const file = formData.get("file");
+    const jobUrl = (formData.get("job_url") as string | null)?.toString().trim() || "";
+    const jobDescription = (formData.get("job_description") as string | null)?.toString().trim() || "";
     const rolePreset = (formData.get("role_preset") as string | null)?.toString().trim() || "default";
 
     if (!file || !(file instanceof File)) {
@@ -55,6 +61,16 @@ export async function POST(req: NextRequest) {
     if (!filename.endsWith(".pdf") && !filename.endsWith(".docx")) {
       return NextResponse.json(
         { error: "Unsupported file type. Please upload a PDF or DOCX." },
+        { status: 400 }
+      );
+    }
+
+    if (!jobDescription || jobDescription.length < 80) {
+      return NextResponse.json(
+        {
+          error:
+            "Paste the full job description (at least a few sentences) so we can compare your resume to it.",
+        },
         { status: 400 }
       );
     }
@@ -79,7 +95,7 @@ export async function POST(req: NextRequest) {
           email: user.email,
           full_name,
           username,
-          plan: "free"
+          plan: "free",
         })
         .select("*")
         .single();
@@ -119,7 +135,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Could not extract enough text from your resume. Please upload a higher quality PDF or DOCX."
+            "Could not extract enough text from your resume. Please upload a higher quality PDF or DOCX.",
         },
         { status: 400 }
       );
@@ -130,7 +146,7 @@ export async function POST(req: NextRequest) {
       .insert({
         user_id: user.id,
         resume_text: resumeText,
-        status: "processing"
+        status: "processing",
       })
       .select("id")
       .single();
@@ -152,20 +168,23 @@ export async function POST(req: NextRequest) {
         ? "Review this as if you are a consulting interviewer at a top firm, caring about structured thinking, leadership, and clear business impact."
         : rolePreset === "finance"
         ? "Review this as if you are a finance / banking recruiter, caring about analytical rigor, deal or project experience, and attention to detail."
-        : "Review this as a pragmatic hiring manager who wants to know if this resume would actually get an interview.";
+        : "Review this as a pragmatic hiring manager who wants to know if this resume would actually get an interview for this job.";
 
     const completion = await getOpenAI().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: ROAST_SYSTEM_PROMPT },
+        { role: "system", content: JOB_ROAST_SYSTEM_PROMPT },
         {
           role: "user",
           content:
             `${roleLens}\n\n` +
-            `Here is the resume text:\n\n${resumeText}`
-        }
+            `Here is the resume text:\n\n${resumeText}\n\n` +
+            `---\n\n` +
+            `Here is the job description text:\n\n${jobDescription}\n\n` +
+            (jobUrl ? `Job URL (for context only, do not scrape): ${jobUrl}\n` : ""),
+        },
       ],
-      temperature: 0.8
+      temperature: 0.8,
     });
 
     const content = completion.choices[0]?.message?.content;
@@ -182,6 +201,14 @@ export async function POST(req: NextRequest) {
       throw new Error("AI response was not valid JSON");
     }
 
+    // Make sure mode is set for the UI even if the model forgets.
+    parsed.mode = "job_compare";
+    parsed.job_context = {
+      description: jobDescription,
+      url: jobUrl || null,
+    };
+    parsed.role_preset = rolePreset;
+
     const score = parsed.overall_score ?? null;
 
     const { error: updateError } = await supabase
@@ -189,7 +216,7 @@ export async function POST(req: NextRequest) {
       .update({
         result_json: parsed,
         score,
-        status: "completed"
+        status: "completed",
       })
       .eq("id", roastRow.id);
 
@@ -199,12 +226,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ id: roastRow.id }, { status: 200 });
   } catch (error: any) {
-    console.error("Roast API error", error);
+    console.error("Job roast API error", error);
     return NextResponse.json(
       {
         error:
           error?.message ||
-          "Something went wrong while roasting your resume. Please try again."
+          "Something went wrong while roasting your resume against this job. Please try again.",
       },
       { status: 500 }
     );

@@ -102,7 +102,34 @@ export async function GET(
       return NextResponse.json({ error: "Roast not found" }, { status: 404 });
     }
 
-    const result = roast.result_json as RoastResult;
+    let result = roast.result_json as RoastResult;
+
+    // Mirror the web UI gating: for free users on job-compare roasts,
+    // do not expose the full deep analysis in the PDF.
+    let plan: "free" | "pro" | "lifetime" = "free";
+    const { data: profile } = await supabase
+      .from("users")
+      .select("plan")
+      .eq("id", user.id)
+      .maybeSingle();
+    plan = (profile?.plan as "free" | "pro" | "lifetime") ?? "free";
+
+    const isJobCompare = result.mode === "job_compare";
+    const isFreeJob = isJobCompare && plan === "free";
+
+    if (isFreeJob) {
+      result = {
+        ...result,
+        work_experience: {
+          roast:
+            "Locked for free plans. Upgrade to Pro or Lifetime to see how your work experience stacks up for this job.",
+          fix:
+            "Upgrade to unlock a job-specific teardown of your bullets, impact, and alignment for this role.",
+        },
+        red_flags: [],
+        top_fixes: [],
+      };
+    }
     const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
     const pageHeight = doc.internal.pageSize.getHeight();
     doc.setLineHeightFactor(LINE_FACTOR);

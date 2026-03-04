@@ -63,6 +63,12 @@ export default function DashboardPage() {
   const stepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isPaid = plan === "pro" || plan === "lifetime";
+  const [mode, setMode] = useState<"resume" | "job">("resume");
+  const [jobUrl, setJobUrl] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
+  const [rolePreset, setRolePreset] = useState<
+    "default" | "big_tech" | "startup" | "consulting" | "finance"
+  >("default");
 
   useEffect(() => {
     if (!uploading) {
@@ -127,8 +133,23 @@ export default function DashboardPage() {
 
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("role_preset", rolePreset);
 
-      const res = await fetch("/api/roast", {
+      if (mode === "job") {
+        if (!jobDescription || jobDescription.trim().length < 80) {
+          setError("Paste the full job description (at least a few sentences) to compare against.");
+          setUploading(false);
+          return;
+        }
+        formData.append("job_description", jobDescription.trim());
+        if (jobUrl.trim()) {
+          formData.append("job_url", jobUrl.trim());
+        }
+      }
+
+      const endpoint = mode === "job" ? "/api/roast/job" : "/api/roast";
+
+      const res = await fetch(endpoint, {
         method: "POST",
         body: formData
       });
@@ -203,6 +224,49 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleUpload} className="space-y-4">
+                <div className="inline-flex rounded-full border border-border/70 bg-background/60 p-1 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setMode("resume")}
+                    className={`px-3 py-1 rounded-full transition-colors ${
+                      mode === "resume"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Roast my resume
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMode("job")}
+                    className={`px-3 py-1 rounded-full transition-colors ${
+                      mode === "job"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Compare to a job
+                  </button>
+                </div>
+                <div className="space-y-1 text-[11px] text-muted-foreground">
+                  <label className="block font-medium text-foreground/80">
+                    Review lens
+                  </label>
+                  <select
+                    value={rolePreset}
+                    onChange={(e) =>
+                      setRolePreset(e.target.value as typeof rolePreset)
+                    }
+                    className="mt-0.5 h-8 w-full max-w-xs rounded-full border border-border/70 bg-card px-3 text-[11px] text-foreground outline-none ring-0 focus:border-primary focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="default">General hiring manager</option>
+                    <option value="big_tech">Big Tech / FAANG</option>
+                    <option value="startup">Startup hiring manager</option>
+                    <option value="consulting">Consulting interviewer</option>
+                    <option value="finance">Finance / banking recruiter</option>
+                  </select>
+                </div>
+
                 <div className="flex items-center gap-3">
                   <label className="flex flex-1 cursor-pointer items-center justify-between rounded-full border border-dashed border-border/70 bg-background/60 px-4 py-2 text-xs text-muted-foreground hover:border-primary/60 hover:text-foreground">
                     <span>
@@ -225,6 +289,32 @@ export default function DashboardPage() {
                     />
                   </label>
                 </div>
+                {mode === "job" && (
+                  <div className="space-y-3 text-xs text-muted-foreground md:text-sm">
+                    <div className="space-y-1">
+                      <label className="block text-[11px] font-medium text-foreground/80">
+                        Job URL (LinkedIn, Indeed, or company careers page)
+                      </label>
+                      <Input
+                        type="url"
+                        placeholder="https://www.linkedin.com/jobs/view/..."
+                        value={jobUrl}
+                        onChange={(e) => setJobUrl(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[11px] font-medium text-foreground/80">
+                        Job description (paste the full posting)
+                      </label>
+                      <textarea
+                        className="min-h-[120px] w-full rounded-md border border-border/70 bg-background/60 px-3 py-2 text-xs outline-none ring-0 focus:border-primary focus:ring-1 focus:ring-primary"
+                        placeholder="Paste the job description from LinkedIn, Indeed, or a company careers page so we can see how well your resume fits it."
+                        value={jobDescription}
+                        onChange={(e) => setJobDescription(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
                 <Button
                   type="submit"
                   className="w-full"
@@ -295,6 +385,46 @@ export default function DashboardPage() {
                     <Link href="/pricing">See upgrade options</Link>
                   </Button>
                 </>
+              )}
+              {process.env.NODE_ENV === "development" && (
+                <div className="mt-3 space-y-1 rounded-md border border-dashed border-border/60 bg-background/60 p-2 text-[11px]">
+                  <p className="font-medium text-foreground/80">
+                    Dev: switch plan for testing
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {(["free", "pro", "lifetime"] as const).map((p) => (
+                      <Button
+                        key={p}
+                        type="button"
+                        size="xs"
+                        variant={plan === p ? "outline" : "ghost"}
+                        className="text-[11px]"
+                        onClick={async () => {
+                          try {
+                            const res = await fetch("/api/dev/plan", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ plan: p }),
+                            });
+                            const data = await res.json();
+                            if (!res.ok) {
+                              alert(data?.error ?? "Failed to set plan");
+                              return;
+                            }
+                            setPlan(p);
+                          } catch {
+                            alert("Failed to set plan");
+                          }
+                        }}
+                      >
+                        {p === "free" ? "Free" : p === "pro" ? "Pro" : "Lifetime"}
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Only works when you&apos;re logged in as an admin email (dev/testing).
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>

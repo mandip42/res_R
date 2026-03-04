@@ -114,20 +114,45 @@ export default function LandingPage() {
               </motion.h1>
               <p className="max-w-xl text-sm text-muted-foreground md:text-base">
                 Get a brutally honest, AI-powered roast of your resume — with sharp,
-                no-BS critique and concrete fixes — in under 60 seconds.
+                no-BS critique and concrete fixes — in under 60 seconds. Or paste a real
+                job description and see how well your resume actually fits it.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
-              <Button asChild size="lg" className="px-7 text-sm md:text-base" aria-label="Go to dashboard to roast your resume">
-                <Link href="/dashboard" className="flex items-center gap-2">
-                  Roast My Resume
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </Link>
-              </Button>
+              <div className="flex items-center gap-3">
+                <Button
+                  asChild
+                  size="lg"
+                  className="px-7 text-sm md:text-base"
+                  aria-label="Go to dashboard to roast your resume"
+                >
+                  <Link href="/dashboard" className="flex items-center gap-2">
+                    Roast My Resume
+                    <ArrowRight className="h-4 w-4" aria-hidden />
+                  </Link>
+                </Button>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4, duration: 0.4 }}
+                  className="relative"
+                >
+                  <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/20" />
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary shadow-[0_0_18px_rgba(248,113,113,0.45)] hover:bg-primary/15"
+                    aria-label="Go to dashboard to compare your resume to a job"
+                  >
+                    New • Compare to a job
+                  </Link>
+                </motion.div>
+              </div>
               <p className="text-xs text-muted-foreground md:text-sm">
                 No fluff. No sugarcoating. Just the feedback you actually need.
-                <span className="block mt-1 text-muted-foreground/80">Free to try — no credit card required.</span>
+                <span className="block mt-1 text-muted-foreground/80">
+                  Free to try — no credit card required.
+                </span>
               </p>
             </div>
 
@@ -139,6 +164,10 @@ export default function LandingPage() {
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 <span>Actionable fixes — not generic advice</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                <span>Compare your resume to real job postings</span>
               </div>
             </div>
           </div>
@@ -212,6 +241,83 @@ export default function LandingPage() {
               <CardContent className="text-xs text-muted-foreground md:text-sm">
                 Follow the concrete fixes, download a polished PDF (Pro), and send out
                 a resume that actually earns interviews.
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* sample roasts */}
+        <section className="space-y-6">
+          <h2 className="text-lg font-semibold tracking-tight md:text-xl">
+            See what a roast actually looks like
+          </h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="border-border/70 bg-card/70">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-sm">
+                  <span>New grad SWE</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
+                    63 / 100
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-xs text-muted-foreground md:text-sm">
+                <p className="text-[11px] font-medium text-foreground">One-liner</p>
+                <p>
+                  Reads like a course project dump — technically busy, but nothing that screams
+                  “ship-ready engineer I can trust on a team.”
+                </p>
+                <p className="text-[11px] font-medium text-foreground mt-2">Top fix</p>
+                <p>
+                  Rewrite bullets around shipped features, users, and impact. “Built X used by Y
+                  people that did Z for the business.”
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/70 bg-card/70">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-sm">
+                  <span>Senior PM (Big Tech)</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
+                    71 / 100
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-xs text-muted-foreground md:text-sm">
+                <p className="text-[11px] font-medium text-foreground">One-liner</p>
+                <p>
+                  This reads like a feature tour, not a product leader — lots of roadmaps, very
+                  few “we moved this metric by X%.”
+                </p>
+                <p className="text-[11px] font-medium text-foreground mt-2">Top fix</p>
+                <p>
+                  Collapse feature lists into 3–4 big bets with hard numbers and clear ownership:
+                  what you chose, why, and how it landed.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/70 bg-card/70">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-sm">
+                  <span>Career switcher</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
+                    58 / 100
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-xs text-muted-foreground md:text-sm">
+                <p className="text-[11px] font-medium text-foreground">One-liner</p>
+                <p>
+                  Half of this resume is your old career’s greatest hits — a hiring manager for the
+                  new role will skim and shrug.
+                </p>
+                <p className="text-[11px] font-medium text-foreground mt-2">Top fix</p>
+                <p>
+                  Translate prior experience into the new lane: pull out 5–7 bullets that sound
+                  like someone already doing the target job.
+                </p>
               </CardContent>
             </Card>
           </div>
