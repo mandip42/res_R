@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { extractTextFromFile } from "@/lib/resume-parser";
 import { JOB_ROAST_SYSTEM_PROMPT, RoastResult, getOpenAI } from "@/lib/openai-client";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { parseJSONFromAI } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -195,7 +196,7 @@ export async function POST(req: NextRequest) {
 
     let parsed: RoastResult;
     try {
-      parsed = JSON.parse(content) as RoastResult;
+      parsed = parseJSONFromAI<RoastResult>(content);
     } catch (err) {
       console.error("Failed to parse OpenAI JSON", err, content);
       throw new Error("AI response was not valid JSON");

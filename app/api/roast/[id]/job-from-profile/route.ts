@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { JOB_ROAST_SYSTEM_PROMPT, RoastResult, getOpenAI } from "@/lib/openai-client";
+import { parseJSONFromAI } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -137,7 +138,7 @@ export async function POST(
 
     let parsed: RoastResult;
     try {
-      parsed = JSON.parse(content) as RoastResult;
+      parsed = parseJSONFromAI<RoastResult>(content);
     } catch (err) {
       console.error("Job-from-profile parse error", err, content);
       return NextResponse.json(

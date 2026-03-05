@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getOpenAI } from "@/lib/openai-client";
+import { parseJSONFromAI } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -125,15 +126,13 @@ export async function POST(
       throw new Error("No content from OpenAI");
     }
 
-    let parsed: {
+    type CoverLetterResult = {
       cover_letter?: string;
       cold_email?: { subject?: string; body?: string };
     };
+    let parsed: CoverLetterResult;
     try {
-      parsed = JSON.parse(content) as {
-        cover_letter?: string;
-        cold_email?: { subject?: string; body?: string };
-      };
+      parsed = parseJSONFromAI<CoverLetterResult>(content);
     } catch (err) {
       console.error("Cover letter parse error", err, content);
       return NextResponse.json(

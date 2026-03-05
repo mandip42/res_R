@@ -5,6 +5,8 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { RoastActions } from "./RoastActions";
 import type { RoastResult } from "@/lib/openai-client";
 import { SectionCardClient } from "./SectionCardClient";
+import { QuickFeedbackCard } from "./QuickFeedbackCard";
+import { LiveBulletEditor } from "./LiveBulletEditor";
 
 type RoastPageProps = {
   params: Promise<{ id: string }>;
@@ -51,7 +53,7 @@ export default async function RoastPage({ params }: RoastPageProps) {
   let atsPresent: string[] = [];
   let atsMissing: string[] = [];
 
-  if (isJobCompare && plan !== "free" && result.job_context?.description) {
+  if (isJobCompare && result.job_context?.description) {
     const resumeText = (roast.resume_text as string) ?? "";
     const jobDesc = (result.job_context.description as string) ?? "";
 
@@ -137,6 +139,11 @@ export default async function RoastPage({ params }: RoastPageProps) {
           </CardContent>
         </Card>
 
+        {/* Quick ATS feedback (Ryzma-style): action verbs + sentence length */}
+        {result.quick_feedback && (
+          <QuickFeedbackCard quickFeedback={result.quick_feedback} />
+        )}
+
         {/* Sections */}
         <SectionCardClient
           roastId={id}
@@ -182,6 +189,27 @@ export default async function RoastPage({ params }: RoastPageProps) {
               isJobCompare={isJobCompare}
             />
 
+            {/* Design & format (Enhancv-style) */}
+            {result.design_and_format && (
+              <Card className="border-border/70 bg-card/80">
+                <CardHeader>
+                  <CardTitle className="text-sm md:text-base">
+                    Design &amp; format
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-xs text-muted-foreground md:text-sm">
+                  <div>
+                    <p className="font-medium text-red-300">Roast</p>
+                    <p>{result.design_and_format.roast}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-emerald-300">Fix</p>
+                    <p>{result.design_and_format.fix}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Red flags */}
             {result.red_flags && result.red_flags.length > 0 && (
               <Card className="border-red-500/40 bg-card/80">
@@ -223,7 +251,12 @@ export default async function RoastPage({ params }: RoastPageProps) {
           </div>
         </div>
 
-        {/* ATS / keyword coverage (Pro, job-compare) */}
+        {/* Live bullet editor (CVComp-style): edit bullets right here */}
+        {user && (
+          <LiveBulletEditor roastId={id} isJobCompare={isJobCompare} />
+        )}
+
+        {/* ATS / keyword coverage — free for all in job-compare (no paywall) */}
         {isJobCompare && (
           <Card className="border-border/70 bg-card/80">
             <CardHeader>
@@ -232,12 +265,7 @@ export default async function RoastPage({ params }: RoastPageProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-xs text-muted-foreground md:text-sm">
-              {plan === "free" ? (
-                <p>
-                  Upgrade to Pro or Lifetime to see which key phrases from this job description
-                  are already in your resume — and which ones are missing.
-                </p>
-              ) : result.job_context?.description ? (
+              {result.job_context?.description ? (
                 <>
                   <p>
                     We scanned the job description for important phrases and checked whether they

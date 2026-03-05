@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getOpenAI } from "@/lib/openai-client";
+import { parseJSONFromAI } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -132,7 +133,7 @@ export async function POST(
 
     let parsed: { alternatives?: string[] };
     try {
-      parsed = JSON.parse(content) as { alternatives?: string[] };
+      parsed = parseJSONFromAI<{ alternatives?: string[] }>(content);
     } catch (err) {
       console.error("Rewrite parse error", err, content);
       return NextResponse.json(
