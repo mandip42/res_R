@@ -109,9 +109,16 @@ export default function LandingPage() {
                 transition={{ duration: 0.6 }}
                 className="text-balance text-3xl font-semibold tracking-tight md:text-5xl"
               >
-                Your resume is probably terrible.
-                <span className="block text-primary">Let&apos;s fix that.</span>
+                Would I Hire You?
               </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="text-lg text-primary font-medium md:text-xl"
+              >
+                Only if you survive the resume roast.
+              </motion.p>
               <p className="max-w-xl text-sm text-muted-foreground md:text-base">
                 Get a brutally honest, AI-powered roast of your resume — with sharp,
                 no-BS critique and concrete fixes — in under 60 seconds. Or paste a real
@@ -128,7 +135,7 @@ export default function LandingPage() {
                   aria-label="Go to dashboard to roast your resume"
                 >
                   <Link href="/dashboard" className="flex items-center gap-2">
-                    Roast My Resume
+                    Get roasted
                     <ArrowRight className="h-4 w-4" aria-hidden />
                   </Link>
                 </Button>
@@ -412,7 +419,7 @@ export default function LandingPage() {
 
         {/* footer */}
         <footer className="flex flex-col gap-3 border-t border-border/60 pt-6 text-[11px] text-muted-foreground md:flex-row md:items-center md:justify-between md:text-xs">
-          <p>© {new Date().getFullYear()} Roast My Resume. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Would I Hire You? All rights reserved.</p>
           <div className="flex flex-wrap gap-4">
             <Link href="/pricing" className="hover:text-foreground">
               Pricing

@@ -57,7 +57,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border-border/70 bg-card/80">
         <CardHeader>
           <CardTitle className="text-center text-lg font-semibold">
-            Log in to Roast My Resume
+            Log in to Would I Hire You?
           </CardTitle>
         </CardHeader>
         <CardContent>

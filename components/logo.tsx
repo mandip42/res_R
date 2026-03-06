@@ -18,7 +18,7 @@ export function Logo({ className = "", height = 36, width = 180 }: LogoProps) {
         className="font-semibold tracking-tight text-foreground"
         style={{ fontSize: Math.round(height * 0.5), lineHeight: 1 }}
       >
-        Roast My Resume
+        Would I Hire You?
       </span>
     </Link>
   );

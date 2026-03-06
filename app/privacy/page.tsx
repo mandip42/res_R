@@ -3,8 +3,8 @@ import { AuthNav } from "@/components/auth-nav";
 import { Logo } from "@/components/logo";
 
 export const metadata = {
-  title: "Privacy Policy | Roast My Resume",
-  description: "Privacy policy for Roast My Resume — how we collect, use, and protect your data.",
+  title: "Privacy Policy | Would I Hire You?",
+  description: "Privacy policy for Would I Hire You? — how we collect, use, and protect your data.",
 };
 
 export default function PrivacyPage() {

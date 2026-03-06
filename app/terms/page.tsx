@@ -3,8 +3,8 @@ import { AuthNav } from "@/components/auth-nav";
 import { Logo } from "@/components/logo";
 
 export const metadata = {
-  title: "Terms of Service | Roast My Resume",
-  description: "Terms of service for Roast My Resume.",
+  title: "Terms of Service | Would I Hire You?",
+  description: "Terms of service for Would I Hire You?",
 };
 
 export default function TermsPage() {
@@ -29,7 +29,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-foreground">1. Acceptance</h2>
             <p>
-              By using Roast My Resume (“the Service”), you agree to these Terms of Service and our Privacy Policy. If you do not agree, do not use the Service.
+              By using Would I Hire You? (“the Service”), you agree to these Terms of Service and our Privacy Policy. If you do not agree, do not use the Service.
             </p>
           </section>
 
@@ -57,7 +57,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-foreground">5. Limitation of liability</h2>
             <p>
-              To the fullest extent permitted by law, Roast My Resume and its operators are not liable for any indirect, incidental, or consequential damages arising from your use of the Service. Our total liability is limited to the amount you paid us in the twelve months before the claim.
+              To the fullest extent permitted by law, Would I Hire You? and its operators are not liable for any indirect, incidental, or consequential damages arising from your use of the Service. Our total liability is limited to the amount you paid us in the twelve months before the claim.
             </p>
           </section>
 
