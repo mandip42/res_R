@@ -13,9 +13,8 @@ const DEV_ADMIN_EMAILS = [
 function isAdminEmail(email: string | undefined | null): boolean {
   if (!email) return false;
   const normalized = email.toLowerCase().trim();
-  if (process.env.NODE_ENV === "development" && DEV_ADMIN_EMAILS.includes(normalized)) {
-    return true;
-  }
+  // Dev admin list works in both dev and production so plan switcher works on deployed app
+  if (DEV_ADMIN_EMAILS.includes(normalized)) return true;
   const single = process.env.ADMIN_EMAIL?.toLowerCase().trim();
   if (single && single === normalized) return true;
   const list =
