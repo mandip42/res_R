@@ -22,6 +22,7 @@
     "next": "latest",
     "next-themes": "latest",
     "openai": "latest",
+    "resend": "latest",
     "pdf-parse": "latest",
     "pdfkit": "^0.17.2",
     "postcss": "^8.4.47",

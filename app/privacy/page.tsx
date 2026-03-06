@@ -64,7 +64,14 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-base font-semibold text-foreground">6. Contact</h2>
             <p>
-              For privacy-related questions, contact us at the email address listed in the app or on our website.
+              For privacy-related questions, contact us at{" "}
+              <a
+                href="mailto:mandipgoswami25@gmail.com"
+                className="text-primary hover:underline"
+              >
+                mandipgoswami25@gmail.com
+              </a>
+              .
             </p>
           </section>
         </div>

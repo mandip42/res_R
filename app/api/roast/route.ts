@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { extractTextFromFile } from "@/lib/resume-parser";
 import { ROAST_SYSTEM_PROMPT, RoastResult, getOpenAI } from "@/lib/openai-client";
 import { parseJSONFromAI } from "@/lib/utils";
+import { sendRoastReadyEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -196,6 +197,15 @@ export async function POST(req: NextRequest) {
 
     if (updateError) {
       console.error(updateError);
+    }
+
+    if (user.email) {
+      // Best-effort email notification; failures are logged but do not block the response
+      void sendRoastReadyEmail({
+        to: user.email,
+        roastId: roastRow.id,
+        isJobCompare: false
+      });
     }
 
     return NextResponse.json({ id: roastRow.id }, { status: 200 });

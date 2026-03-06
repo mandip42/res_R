@@ -419,7 +419,18 @@ export default function LandingPage() {
 
         {/* footer */}
         <footer className="flex flex-col gap-3 border-t border-border/60 pt-6 text-[11px] text-muted-foreground md:flex-row md:items-center md:justify-between md:text-xs">
-          <p>© {new Date().getFullYear()} Would I Hire You? All rights reserved.</p>
+          <div className="space-y-1">
+            <p>© {new Date().getFullYear()} Would I Hire You? All rights reserved.</p>
+            <p className="text-[10px] md:text-xs">
+              Support:&nbsp;
+              <a
+                href="mailto:support@wouldihireyou.co"
+                className="text-primary hover:underline"
+              >
+                support@wouldihireyou.co
+              </a>
+            </p>
+          </div>
           <div className="flex flex-wrap gap-4">
             <Link href="/pricing" className="hover:text-foreground">
               Pricing

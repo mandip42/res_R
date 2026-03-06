@@ -1,29 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { isAdminEmail } from "@/lib/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const DEV_ADMIN_EMAILS = [
-  "mandipgoswami25@gmail.com",
-  "mandipgoswami@gmail.com",
-  "ritusmitabaruah18@gmail.com",
-];
-
-function isAdminEmail(email: string | undefined | null): boolean {
-  if (!email) return false;
-  const normalized = email.toLowerCase().trim();
-  // Dev admin list works in both dev and production so plan switcher works on deployed app
-  if (DEV_ADMIN_EMAILS.includes(normalized)) return true;
-  const single = process.env.ADMIN_EMAIL?.toLowerCase().trim();
-  if (single && single === normalized) return true;
-  const list =
-    process.env.ADMIN_EMAILS?.toLowerCase()
-      .split(",")
-      .map((e) => e.trim())
-      .filter(Boolean) ?? [];
-  return list.includes(normalized);
-}
 
 /** Dev-only endpoint to flip the current user's plan between free/pro/lifetime for testing. */
 export async function POST(req: NextRequest) {

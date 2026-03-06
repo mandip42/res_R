@@ -478,6 +478,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </section>
+
       </div>
     </main>
   );

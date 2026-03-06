@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, LogOut, User } from "lucide-react";
+import { ArrowRight, LogOut, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
@@ -11,6 +11,7 @@ type AuthUser = {
   email?: string;
   full_name?: string;
   username?: string;
+  isAdmin?: boolean;
 };
 
 export function AuthNav() {
@@ -133,6 +134,21 @@ export function AuthNav() {
         <User className="h-3.5 w-3.5" />
         {displayName}
       </Link>
+      <Link
+        href="/profile"
+        className="whitespace-nowrap text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
+      >
+        My profile
+      </Link>
+      {user.isAdmin && (
+        <Link
+          href="/admin"
+          className="flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-muted-foreground hover:text-foreground md:text-sm"
+        >
+          <Shield className="h-3.5 w-3.5" />
+          Admin
+        </Link>
+      )}
       <button
         type="button"
         onClick={handleSignOut}

@@ -31,3 +31,13 @@ create table if not exists public.roasts (
 
 create index if not exists roasts_user_id_idx on public.roasts (user_id);
 
+-- Anonymous visit tracking for admin analytics (visitor count, conversion context)
+create table if not exists public.visits (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  path text not null default '',
+  visitor_id text not null
+);
+
+create index if not exists visits_created_at_idx on public.visits (created_at);
+create index if not exists visits_visitor_id_idx on public.visits (visitor_id);

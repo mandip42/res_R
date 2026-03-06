@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { VisitTracker } from "@/components/visit-tracker";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://roastmyresume.app";
 
@@ -41,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="font-sans bg-background text-foreground antialiased">
+        <VisitTracker />
         {children}
       </body>
     </html>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { JOB_ROAST_SYSTEM_PROMPT, RoastResult, getOpenAI } from "@/lib/openai-client";
 import { parseJSONFromAI } from "@/lib/utils";
+import { sendRoastReadyEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -167,6 +168,14 @@ export async function POST(
 
     if (updateError) {
       console.error(updateError);
+    }
+
+    if (user.email) {
+      void sendRoastReadyEmail({
+        to: user.email,
+        roastId: newRoastRow.id,
+        isJobCompare: true,
+      });
     }
 
     return NextResponse.json({ id: newRoastRow.id }, { status: 200 });

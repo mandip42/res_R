@@ -64,7 +64,15 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-foreground">6. Changes and contact</h2>
             <p>
-              We may update these terms from time to time; continued use after changes constitutes acceptance. For questions, contact us at the email address provided in the app or on our website.
+              We may update these terms from time to time; continued use after changes constitutes
+              acceptance. For questions, contact us at{" "}
+              <a
+                href="mailto:mandipgoswami25@gmail.com"
+                className="text-primary hover:underline"
+              >
+                mandipgoswami25@gmail.com
+              </a>
+              .
             </p>
           </section>
         </div>

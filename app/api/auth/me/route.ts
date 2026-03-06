@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { isAdminEmail } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
-/** Returns the current user's profile (username, full_name) from public.users for display in the nav. */
+/** Returns the current user's profile (username, full_name, plan, isAdmin) from public.users for display in the nav. */
 export async function GET() {
   const supabase = await createSupabaseServerClient();
   const {
@@ -28,6 +29,7 @@ export async function GET() {
       username: profile?.username ?? user.user_metadata?.username ?? null,
       full_name: profile?.full_name ?? user.user_metadata?.full_name ?? null,
       plan,
+      isAdmin: isAdminEmail(user.email ?? undefined),
     },
   });
 }

@@ -3,6 +3,7 @@ import { extractTextFromFile } from "@/lib/resume-parser";
 import { JOB_ROAST_SYSTEM_PROMPT, RoastResult, getOpenAI } from "@/lib/openai-client";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { parseJSONFromAI } from "@/lib/utils";
+import { sendRoastReadyEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -223,6 +224,14 @@ export async function POST(req: NextRequest) {
 
     if (updateError) {
       console.error(updateError);
+    }
+
+    if (user.email) {
+      void sendRoastReadyEmail({
+        to: user.email,
+        roastId: roastRow.id,
+        isJobCompare: true,
+      });
     }
 
     return NextResponse.json({ id: roastRow.id }, { status: 200 });
