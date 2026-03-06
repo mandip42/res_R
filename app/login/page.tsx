@@ -168,6 +168,10 @@ export default function LoginPage() {
             >
               {loadingGoogle ? "Redirecting to Google..." : "Continue with Google"}
             </Button>
+            <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              You may see a <span className="font-medium">supabase.co</span> domain on the Google consent screen — that’s our
+              secure sign-in provider. We never see your Google password.
+            </p>
           </div>
 
           {error && (
