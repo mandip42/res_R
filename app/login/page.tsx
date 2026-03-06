@@ -13,31 +13,64 @@ import { Logo } from "@/components/logo";
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
+  // User can enter either email or username
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loadingPassword, setLoadingPassword] = useState(false);
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const err = searchParams.get("error");
-    if (err) setError(err === "callback" ? "Email confirmation failed or link expired." : decodeURIComponent(err));
+    if (err) {
+      setError(
+        err === "callback"
+          ? "Email confirmation failed or link expired."
+          : decodeURIComponent(err)
+      );
+    }
   }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
+    setLoadingPassword(true);
     setError(null);
 
     try {
+      const trimmed = identifier.trim();
+      if (!trimmed) {
+        setError("Enter your email or username.");
+        setLoadingPassword(false);
+        return;
+      }
+
       const supabase = createSupabaseBrowserClient();
+      let emailToUse = trimmed;
+
+      // If it doesn't look like an email, treat it as a username and resolve to an email
+      if (!emailToUse.includes("@")) {
+        const { data, error: lookupError } = await supabase
+          .from("users")
+          .select("email")
+          .eq("username", emailToUse)
+          .maybeSingle();
+
+        if (lookupError || !data?.email) {
+          setError("No account found for that username or email.");
+          setLoadingPassword(false);
+          return;
+        }
+        emailToUse = data.email;
+      }
+
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password
+        email: emailToUse,
+        password,
       });
 
       if (signInError) {
         setError(signInError.message);
-        setLoading(false);
+        setLoadingPassword(false);
         return;
       }
 
@@ -45,7 +78,32 @@ export default function LoginPage() {
       router.refresh();
     } catch (err: any) {
       setError(err?.message ?? "Something went wrong logging you in.");
-      setLoading(false);
+      setLoadingPassword(false);
+    }
+  }
+
+  async function handleGoogleLogin() {
+    try {
+      setError(null);
+      setLoadingGoogle(true);
+      const supabase = createSupabaseBrowserClient();
+      const origin = window.location.origin;
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${origin}/auth/callback?next=/dashboard`,
+        },
+      });
+
+      if (error) {
+        setError(error.message);
+        setLoadingGoogle(false);
+      }
+      // On success, Supabase will redirect to Google then back to /auth/callback.
+    } catch (err: any) {
+      setError(err?.message ?? "Something went wrong with Google login.");
+      setLoadingGoogle(false);
     }
   }
 
@@ -63,14 +121,14 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="identifier">Email or username</Label>
               <Input
-                id="email"
-                type="email"
+                id="identifier"
+                type="text"
                 required
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com or username"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -91,10 +149,26 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Logging you in..." : "Log in"}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loadingPassword || loadingGoogle}
+            >
+              {loadingPassword ? "Logging you in..." : "Log in"}
             </Button>
           </form>
+
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleGoogleLogin}
+              disabled={loadingGoogle || loadingPassword}
+            >
+              {loadingGoogle ? "Redirecting to Google..." : "Continue with Google"}
+            </Button>
+          </div>
 
           {error && (
             <p className="mt-3 text-center text-xs text-red-400">{error}</p>
