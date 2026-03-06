@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import type { RoastResult } from "@/lib/openai-client";
 import { jsPDF } from "jspdf";
 
-/** og.png is 1200×630; preserve aspect ratio so it isn't compressed vertically */
-const LOGO_WIDTH_PT = 160;
-const LOGO_ASPECT = 630 / 1200;
-const LOGO_HEIGHT_PT = LOGO_WIDTH_PT * LOGO_ASPECT;
+/** Header height when using text only (no logo image) */
+const HEADER_HEIGHT_PT = 24;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -150,19 +146,11 @@ export async function GET(
 
     let y = MARGIN;
 
-    try {
-      const logoPath = join(process.cwd(), "public", "og.png");
-      const logoBuf = await readFile(logoPath);
-      const logoBase64 = logoBuf.toString("base64");
-      const logoX = (PAGE_WIDTH - LOGO_WIDTH_PT) / 2;
-      doc.addImage(logoBase64, "PNG", logoX, y - 2, LOGO_WIDTH_PT, LOGO_HEIGHT_PT);
-    } catch {
-      doc.setFontSize(FONT.mainTitle);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...COLORS.primary);
-      doc.text("Would I Hire You?", MARGIN, y + 12);
-    }
-    y += LOGO_HEIGHT_PT + 6;
+    doc.setFontSize(FONT.mainTitle);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.primary);
+    doc.text("Would I Hire You?", MARGIN, y + 12);
+    y += HEADER_HEIGHT_PT + 6;
 
     doc.setFontSize(FONT.tiny);
     doc.setTextColor(...COLORS.muted);
