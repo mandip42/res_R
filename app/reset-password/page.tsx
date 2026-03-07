@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Logo } from "@/components/logo";
+import { getTokensFromHash, clearAuthHash } from "@/lib/auth-hash";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -24,26 +25,58 @@ export default function ResetPasswordPage() {
     const run = async () => {
       const code = searchParams.get("code");
 
+      // 1) PKCE: exchange code for session (same browser)
       if (code) {
         const exchangeRes = await fetch("/api/auth/exchange-code", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code }),
         });
-        const exchangeData = await exchangeRes.json();
-        if (!exchangeRes.ok) {
-          setError(exchangeData?.error ?? "Invalid or expired link. Request a new reset.");
+        if (exchangeRes.ok) {
+          await fetch("/api/auth/sync-profile", { method: "POST" });
+          setReady(true);
           setLoading(false);
           return;
         }
-        await fetch("/api/auth/sync-profile", { method: "POST" });
-      } else {
-        const supabase = createSupabaseBrowserClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          router.replace("/login?error=reset_link_expired");
+        const exchangeData = await exchangeRes.json();
+        setError(exchangeData?.error ?? "Invalid or expired link. Request a new reset.");
+        setLoading(false);
+        return;
+      }
+
+      // 2) Token-in-hash: set session from URL fragment (e.g. different browser)
+      const tokens = getTokensFromHash();
+      if (tokens) {
+        try {
+          const supabase = createSupabaseBrowserClient();
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token,
+          });
+          clearAuthHash();
+          if (sessionError) {
+            setError(sessionError.message);
+            setLoading(false);
+            return;
+          }
+          await fetch("/api/auth/sync-profile", { method: "POST" });
+          setReady(true);
+          setLoading(false);
+          return;
+        } catch {
+          clearAuthHash();
+          setError("Invalid or expired link. Request a new reset.");
+          setLoading(false);
           return;
         }
+      }
+
+      // 3) Already have session (e.g. returned to page after exchange)
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace("/login?error=reset_link_expired");
+        return;
       }
 
       setReady(true);

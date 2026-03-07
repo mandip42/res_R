@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getTokensFromHash, clearAuthHash } from "@/lib/auth-hash";
+
 export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -11,29 +14,65 @@ export default function AuthCallbackPage() {
     const run = async () => {
       const code = searchParams.get("code");
       const next = searchParams.get("next") ?? "/dashboard";
+      let hadCode = false;
 
-      if (!code) {
-        setStatus("error");
-        router.replace("/login?error=missing_code");
-        return;
-      }
+      // 1) PKCE: exchange code for session (works when link opened in same browser)
+      if (code) {
+        hadCode = true;
+        const res = await fetch("/api/auth/exchange-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+        });
 
-      const res = await fetch("/api/auth/exchange-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-
-      if (!res.ok) {
+        if (res.ok) {
+          await fetch("/api/auth/sync-profile", { method: "POST" });
+          setStatus("ok");
+          router.replace(next);
+          return;
+        }
         const data = await res.json();
-        setStatus("error");
-        router.replace(`/login?error=${encodeURIComponent(data?.error ?? "Invalid link")}`);
-        return;
+        // If exchange failed (e.g. different browser / no code_verifier), try hash below
+        if (res.status !== 400) {
+          setStatus("error");
+          router.replace(`/login?error=${encodeURIComponent(data?.error ?? "Invalid link")}`);
+          return;
+        }
       }
 
-      await fetch("/api/auth/sync-profile", { method: "POST" });
-      setStatus("ok");
-      router.replace(next);
+      // 2) Token-in-hash: set session from URL fragment (e.g. link opened in different browser)
+      const tokens = getTokensFromHash();
+      if (tokens) {
+        try {
+          const supabase = createSupabaseBrowserClient();
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token,
+          });
+          if (sessionError) {
+            setStatus("error");
+            clearAuthHash();
+            router.replace(`/login?error=${encodeURIComponent(sessionError.message)}`);
+            return;
+          }
+          clearAuthHash();
+          await fetch("/api/auth/sync-profile", { method: "POST" });
+          setStatus("ok");
+          router.replace(next);
+          return;
+        } catch {
+          setStatus("error");
+          clearAuthHash();
+          router.replace("/login?error=invalid_link");
+          return;
+        }
+      }
+
+      setStatus("error");
+      const errMsg = hadCode
+        ? "Open the link in the same browser where you signed up, or request a new confirmation email."
+        : "Invalid or expired link. Request a new email.";
+      router.replace(`/login?error=${encodeURIComponent(errMsg)}`);
     };
 
     run();

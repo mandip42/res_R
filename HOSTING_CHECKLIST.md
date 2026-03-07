@@ -57,14 +57,21 @@ Redeploy after adding or changing variables (Vercel → Deployments → ⋮ on l
 
 ---
 
-## 4. Supabase – allow your production URL
+## 4. Supabase – allow your production URL (required for email links)
 
-If you use Supabase Auth (sign in, sign up, redirects):
+**If signup or forgot-password email links don’t work**, the redirect URL is almost always the cause. Supabase must allow your app’s URLs:
 
 1. Open [Supabase Dashboard](https://supabase.com/dashboard) → your project → **Authentication** → **URL Configuration**.
-2. Add your production URL to **Site URL** and **Redirect URLs**, e.g.:
-   - Site URL: `https://your-project.vercel.app`
-   - Redirect URLs: `https://your-project.vercel.app/**`
+2. Set **Site URL** to your app’s origin (no path):
+   - Local: `http://localhost:3000`
+   - Production: `https://your-project.vercel.app` (or your custom domain)
+3. Under **Redirect URLs**, add every URL where Supabase may send users after they click the email link. Add both local and production if you use both:
+   - `http://localhost:3000/auth/callback`
+   - `http://localhost:3000/reset-password`
+   - `https://your-project.vercel.app/auth/callback`
+   - `https://your-project.vercel.app/reset-password`
+   - Or use a wildcard: `http://localhost:3000/**` and `https://your-project.vercel.app/**`
+4. Click **Save**. Then try the signup or forgot-password flow again; the link in the email should land on your app and complete the flow.
 
 ---
 
